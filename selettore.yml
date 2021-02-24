@@ -14,3 +14,7 @@ price:
     css: 'span#price_inside_buybox'
     xpath: null
     type: Text
+spedition:
+    css: 'a#SSOFpopoverLink'
+    xpath: null
+    type: Text

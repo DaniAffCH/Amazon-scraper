@@ -5,8 +5,8 @@ from time import sleep
 
 class Scraper:
     __private_url = str()
-    r = str()
-    ext = str()
+    r = None
+    ext = None
     headers = {
         'dnt': '1',
         'upgrade-insecure-requests': '1',
@@ -21,6 +21,8 @@ class Scraper:
     }
 
     def __init__(self, u, selector):
+        if u == None or u == "" or selector == None or selector == "":
+            raise Exception("I parametri devono essere inizializzati")
         self.__private_url = u
         self.ext = Extractor.from_yaml_file(selector)
 
@@ -31,16 +33,16 @@ class Scraper:
         print("INVIO RICHIESTA")
         tmp = requests.get(self.__private_url, headers=self.headers)
         if tmp.status_code > 400:
-            if "To discuss automated access to Amazon data please contact" in tmp.text:
-                print("AMAZON TI HA BLOCCATO\nURL CORRENTE %s"%this.__private_url)
-            else:
-                print("ERRORE! CODICE %s"%tmp.status_code)
+            raise Exception("ERRORE! CODICE %s"%tmp.status_code)
+        elif "To discuss automated access to Amazon data please contact" in tmp.text:
+            raise Exception("AMAZON TI HA BLOCCATO\nURL CORRENTE %s"%self.__private_url)
         else:
             print("DOWNLOAD PAGINA COMPLETATO")
             self.r = tmp
 
     def extraction(self):
-        return self.ext.extract(self.r.text)
+        if(self.r!=None):
+            return self.ext.extract(self.r.text)
 
 
 
