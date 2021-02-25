@@ -1,6 +1,7 @@
 from selectorlib import Extractor
 import requests
 import json
+import re
 from time import sleep
 
 class Scraper:
@@ -40,13 +41,29 @@ class Scraper:
             print("DOWNLOAD PAGINA COMPLETATO")
             self.r = tmp
 
+    def __normalize(self, arr):
+        arr["price"] = arr["price"].replace(u'\xa0', u'')
+        pattern = r"n\. (\d+,*\d*) in (Alimentari e cura della casa|Oli d'oliva)"
+        arr["ranking"] = re.findall(pattern,arr["ranking"])
+
+        for n, element in enumerate(arr["ranking"]):
+            tmp = list(arr["ranking"][n])
+            tmp[0] = int(element[0].replace(',', ''))
+            arr["ranking"][n] = tuple(tmp)
+
+        pattern = r"\d+"
+        arr["reviews"] = int(re.search(pattern,arr["reviews"]).group())
+        return arr
+
     def extraction(self):
         if(self.r!=None):
-            return self.ext.extract(self.r.text)
+            out = self.ext.extract(self.r.text)
+            out["AmazonSpedition"] = "spedito da Amazon" in self.r.text
+            return self.__normalize(out)
 
-
-
-sc = Scraper("https://www.amazon.it/Extravergine-Gnavolini-Raccolta-Sapore-leccellenza/dp/B086F1GW15/ref=sr_1_1_sspa?__mk_it_IT=%C3%85M%C3%85%C5%BD%C3%95%C3%91&dchild=1&keywords=olio+evo&qid=1614108355&sr=8-1-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUExSUw5T0VKM1NJSTRFJmVuY3J5cHRlZElkPUEwNjE0NDA3MTZNREwzRFpITVVKTiZlbmNyeXB0ZWRBZElkPUEwMzIzNjY1QkcwNFNKOUgyWTM3JndpZGdldE5hbWU9c3BfYXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==", "selettore.yml")
+url = "https://www.amazon.it/litri-100-Italiano-Extravergine-Oliva/dp/B07B8SQ7P9/ref=sr_1_13?__mk_it_IT=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=3KP0OKGEUEBGI&dchild=1&keywords=olio+evo+italiano&qid=1614272750&rnid=490209031&sprefix=olio+evo%2Caps%2C416&sr=8-13"
+sel = "selettore.yml"
+sc = Scraper(url, sel)
 sc.sendRequest()
 
 print(sc.extraction())
