@@ -2,6 +2,7 @@ from selectorlib import Extractor
 import requests
 import json
 import re
+import random
 from time import sleep
 
 class Scraper:
@@ -21,18 +22,23 @@ class Scraper:
         'accept-language': 'it-IT;q=0.9,it;q=0.8',
     }
 
-    def __init__(self, u, selector):
-        if u == None or u == "" or selector == None or selector == "":
+    ip_addresses = ["181.129.183.19:53281"]
+
+    def __init__(self, selector):
+        if selector == None or selector == "":
             raise Exception("I parametri devono essere inizializzati")
-        self.__private_url = u
         self.ext = Extractor.from_yaml_file(selector)
 
     def setUrl(self, u):
         self.__private_url = u
 
     def sendRequest(self):
+        if(self.__private_url == None or self.__private_url == ""):
+            raise Exception("Url non valido")
         print("INVIO RICHIESTA")
-        tmp = requests.get(self.__private_url, headers=self.headers)
+        proxy = {"http": "http://"+self.ip_addresses[0], "https": "http://"+self.ip_addresses[0]}
+        tmp = requests.get(self.__private_url, headers=self.headers, proxies=proxy)
+
         if tmp.status_code > 400:
             raise Exception("ERRORE! CODICE %s"%tmp.status_code)
         elif "To discuss automated access to Amazon data please contact" in tmp.text:
@@ -61,12 +67,24 @@ class Scraper:
             out["AmazonSpedition"] = "spedito da Amazon" in self.r.text
             return self.__normalize(out)
 
-url = "https://www.amazon.it/litri-100-Italiano-Extravergine-Oliva/dp/B07B8SQ7P9/ref=sr_1_13?__mk_it_IT=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=3KP0OKGEUEBGI&dchild=1&keywords=olio+evo+italiano&qid=1614272750&rnid=490209031&sprefix=olio+evo%2Caps%2C416&sr=8-13"
-sel = "selettore.yml"
-sc = Scraper(url, sel)
-sc.sendRequest()
 
-print(sc.extraction())
+def readFromFile(sc: Scraper, pathIn, pathOut = "info.txt"):
+    with open(pathIn, 'r') as urlList:
+        for url in urlList:
+            sc.setUrl(url)
+            sc.sendRequest()
+            res = sc.extraction()
+            print(res)
+            with open(pathOut, 'a') as outputFile:
+                for element in res:
+                    outputFile.write(element+"\n")
+                outputFile.write("\n\n")
+
+
+sel = "selettore.yml"
+sc = Scraper(sel)
+readFromFile(sc, "./list.txt")
+
 # product_data = []
 # with open("search_results_urls.txt",'r') as urllist, open('search_results_output.jsonl','w') as outfile:
 #     for url in urllist.read().splitlines():
