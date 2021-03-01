@@ -19,18 +19,7 @@ def readFromFile(sc: Scraper, pathIn, pathOut = "info.txt"):
                 outputFile.write("\n\n")
 
 
-sel = "selettore.yml"
-sc = Scraper(sel)
-readFromFile(sc, "list.txt")
-
-# product_data = []
-# with open("search_results_urls.txt",'r') as urllist, open('search_results_output.jsonl','w') as outfile:
-#     for url in urllist.read().splitlines():
-#         data = scrape(url)
-#         if data:
-#             for product in data['products']:
-#                 product['search_url'] = url
-#                 print("Saving Product: %s"%product['title'])
-#                 json.dump(product,outfile)
-#                 outfile.write("\n")
-                # sleep(5)
+if __name__ == "__main__":
+    sel = "selettore.yml"
+    sc = Scraper(sel)
+    readFromFile(sc, "list.txt")
