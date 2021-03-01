@@ -19,8 +19,6 @@ class Scraper:
         'accept-language': 'it-IT;q=0.9,it;q=0.8',
     }
 
-    ip_addresses = ["67.205.190.164:8080"]
-
     def __init__(self, selector):
         if selector == None or selector == "":
             raise Exception("I parametri devono essere inizializzati")
